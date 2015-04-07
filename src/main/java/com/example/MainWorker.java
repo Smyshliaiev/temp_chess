@@ -119,12 +119,12 @@ public class MainWorker {
 */
 //                System.out.println("realMatrixInOriginal ref!!!!!:" + Integer.toHexString(System.identityHashCode(realMatrixInOriginal)));
 
-//                if(mReqDeep == 0) {
-//                    HashSet listOfUniquePos = iterateAllFigurePositions(mVariantOfPermutedPieces, mReqDeep, copyOfInMatrix);
-//                    if (listOfUniquePos.size()==mVariantOfPermutedPieces.size()) {
-//                        mHashSet.add(listOfUniquePos);
-//                    }
-//                }
+                if(mReqDeep == 0) {
+                    HashSet listOfUniquePos = iterateAllFigurePositions(mVariantOfPermutedPieces, mReqDeep, copyOfInMatrix);
+                    if (listOfUniquePos.size()==mVariantOfPermutedPieces.size()) {
+                        mHashSet.add(listOfUniquePos);
+                    }
+                }
 
 
                 // id pos F1 < 2 and pos F2 < 2 and ... pos Fn < 2 then hashset.add (current F)
@@ -136,8 +136,8 @@ public class MainWorker {
                     copyOfInMatrix.walkInRowOrder(new SetVisitor(mVariantOfPermutedPiecesCopy, mReqDeep, copyOfInMatrix));
                 }
 
-//                if(deep == 0){
-//                    mHasSet.add(new Positions(deep, prevPiecePosX, prevPiecePosY, i, j));
+//                if(mReqDeep == 0){
+//                    mHashSet.add(new Position(deep, prevPiecePosX, prevPiecePosY, i, j));
 //                }
 
             }
