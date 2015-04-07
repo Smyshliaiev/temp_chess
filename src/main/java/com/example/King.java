@@ -14,7 +14,7 @@ public class King extends Piece {
         pieceIdentifiers.add(mPieceId);
 
         mPiecesType = PiecesType.KING;
-        mPosition = new Position(0, 0);
+        mPosition = new Position(-100, -100);
     }
 
     @Override

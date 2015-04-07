@@ -1,10 +1,10 @@
 package com.example;
 
 import org.apache.commons.math3.linear.DefaultRealMatrixChangingVisitor;
-import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -15,6 +15,8 @@ public class MainWorker {
     public static final int BOARD_HEIGHT = 3;
     public static final int BOARD_WIDTH = 3;
     private ChessBoard mChessBoard;
+
+    private HashSet mHashSet = new HashSet();
 
     public MainWorker() {
         mChessBoard = new ChessBoard();
@@ -31,7 +33,7 @@ public class MainWorker {
 
         permutator.addPiece(king0);
         permutator.addPiece(king1);
-//        permutator.addPiece(king2);
+        permutator.addPiece(king2);
 
 //        permutator.permutateShow();
 
@@ -59,33 +61,16 @@ public class MainWorker {
 
     private void findUnique(List<IPiece> variantOfPermutedPieces) {
 
-//        for(IPiece piece: variantOfPermutedPieces) {
-//            mChessBoard.getChessBoardMatrix().walkInColumnOrder(new SetVisitor(piece));
-//        }
-        //ChessBoard chessBoard = new ChessBoard();
-        findUniqueReq(variantOfPermutedPieces, variantOfPermutedPieces.size()-1, null);
+        findUniqueReq(variantOfPermutedPieces, variantOfPermutedPieces.size());
+
+        System.out.println("hashset size: " + mHashSet.size());
 
     }
 
-    private void findUniqueReq(List<IPiece> variantOfPermutedPieces, int reqDeep, ChessBoard chessBoard){
-        if(chessBoard == null) {
-            chessBoard = new ChessBoard();
-        }
+    private void findUniqueReq(List<IPiece> variantOfPermutedPieces, int reqDeep){
 
-        if(reqDeep>=0){
-            System.out.println("new recursion for chessboard: " + chessBoard + ", deep: " + reqDeep);
-            IPiece piece = variantOfPermutedPieces.get(reqDeep);
-            //System.out.println(piece);
-            //mChessBoard.getChessBoardMatrix().add(piece.getPieceMovementMatrix());
-            //check for free places
-
-            //iterate 1st piece movement
-            chessBoard.getChessBoardMatrix().walkInColumnOrder(new SetVisitor(variantOfPermutedPieces, reqDeep, chessBoard));
-        }
-
-//        --reqDeep;
-//        // go to process next nested pieces
-//        findUniqueReq(variantOfPermutedPieces, reqDeep);
+            ChessBoard chessBoard = new ChessBoard();
+            chessBoard.getChessBoardMatrix().walkInRowOrder(new SetVisitor(variantOfPermutedPieces, reqDeep, chessBoard.getChessBoardMatrix().copy()));
     }
 
 
@@ -93,34 +78,85 @@ public class MainWorker {
         private int mReqDeep;
         List<IPiece> mVariantOfPermutedPieces;
         ChessBoard mVisitorChessBoard;
+        private RealMatrix realMatrixInOriginal;
+        private RealMatrix realMatrixInOriginalCopy;
 
 
-        private SetVisitor(List<IPiece> variantOfPermutedPieces, int reqDeep, ChessBoard chessBoard) {
+        private SetVisitor(List<IPiece> variantOfPermutedPieces, int reqDeep, RealMatrix realMatrix) {
             mReqDeep = reqDeep;
             mVariantOfPermutedPieces = variantOfPermutedPieces;
-            mVisitorChessBoard = chessBoard;
+            //mVisitorChessBoard = chessBoard;
+            this.realMatrixInOriginal = realMatrix;
         }
 
         @Override
         public double visit(int i, int j, double value) {
-            if(mVisitorChessBoard.getChessBoardMatrix().getEntry(i,j) == Piece.FREE_VALUE) {
-
-                //mChessBoard.getChessBoardMatrix().setEntry(i, j, Piece.HIT_VALUE);
+//            System.out.println("visit i: " + i + "j:" + j);
+            if(realMatrixInOriginal.getEntry(i,j) == 0){
+                RealMatrix copyOfInMatrix = realMatrixInOriginal.copy();
+                //copyOfInMatrix.setEntry(i,j,1);
                 IPiece piece =  mVariantOfPermutedPieces.get(mReqDeep);
-                piece.setPosition(new Position(j,i));
-                RealMatrix realMatrixCombined = mVisitorChessBoard.getChessBoardMatrix().add(piece.getPieceMovementMatrix());
+                piece.setPosition(new Position(i,j));
+                copyOfInMatrix = copyOfInMatrix.add(piece.getPieceMovementMatrix());
+                System.out.println("visit i: " + i + ", j: " + j + ", deep: " + mReqDeep + ", copyOfInMatrix: " + copyOfInMatrix + ", orMatrix: " + realMatrixInOriginal);
+                System.out.println("realMatrixInOriginal ref!!!!!:" + Integer.toHexString(System.identityHashCode(realMatrixInOriginal)));
 
-                findUniqueReq(mVariantOfPermutedPieces, mReqDeep - 1, mVisitorChessBoard.clearAndCopy(realMatrixCombined));
-                System.out.println("visit deep: " + mReqDeep + ", " + mVariantOfPermutedPieces.get(mReqDeep) + ", i: " + i + ", j: " + j);
+//                if(mReqDeep == 0) {
+//                    HashSet listOfUniquePos = iterateAllFigurePositions(mVariantOfPermutedPieces, mReqDeep, copyOfInMatrix);
+//                    if (listOfUniquePos.size()==mVariantOfPermutedPieces.size()) {
+//                        mHashSet.add(listOfUniquePos);
+//                    }
+//                }
+
+
+                // id pos F1 < 2 and pos F2 < 2 and ... pos Fn < 2 then hashset.add (current F)
+                //if(copyOfInMatrix.getEntry(piece.getPosition().getX(), piece.getPosition().getY() )
+
+
+                if(mReqDeep>0) {
+                    realMatrixInOriginal.walkInRowOrder(new SetVisitor(mVariantOfPermutedPieces, mReqDeep, copyOfInMatrix));
+                }
+
+//                if(deep == 0){
+//                    mHasSet.add(new Positions(deep, prevPiecePosX, prevPiecePosY, i, j));
+//                }
+
             }
+            else{
+                //System.out.println("cant visit i: " + i + ", j: " + j + ", deep: " + mReqDeep + ", matrix: " + realMatrixInOriginal);
+            }
+
             return 0;
+        }
+
+        private HashSet iterateAllFigurePositions(List<IPiece> variantOfPermutedPieces, int deep, RealMatrix currentMatrix) {
+            HashSet localHashSet = new HashSet();
+            //List<UniquePosition> listOfUniqePos = new ArrayList<UniquePosition>();
+            boolean isAllPositionsAreOk = true;
+            for(IPiece piece: variantOfPermutedPieces){
+                //System.out.println("curent poses of figures id: " + piece.getIdentifier() + ", pos: " + piece.getPosition());
+                if(currentMatrix.getEntry(piece.getPosition().getX(), piece.getPosition().getY()) > Piece.HIT_VALUE){
+
+                    isAllPositionsAreOk = false;
+                    localHashSet.clear();
+                }else if(currentMatrix.getEntry(piece.getPosition().getX(), piece.getPosition().getY()) == Piece.HIT_VALUE) {
+                    System.out.println("unique curent poses of figures type: " + piece.getType() + ", pos: " + piece.getPosition());
+                    localHashSet.add(new UniquePosition(piece.getType(), piece.getPosition()));
+                }
+            }
+            return localHashSet;
+        }
+
+        @Override
+        public void start(int rows, int columns, int startRow, int endRow, int startColumn, int endColumn) {
+            --mReqDeep;
+            System.out.println("start");
+            super.start(rows, columns, startRow, endRow, startColumn, endColumn);
         }
 
         @Override
         public double end() {
-            --mReqDeep;
-            // go to process next nested pieces
-//            findUniqueReq(mVariantOfPermutedPieces, mReqDeep);
+            System.out.println("end");
             return super.end();
         }
     }
