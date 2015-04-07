@@ -17,4 +17,6 @@ public interface IPiece {
     int getIdentifier();
 
     RealMatrix getPieceMovementMatrix();
+
+    void clearMatrix();
 }

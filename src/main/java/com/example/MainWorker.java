@@ -1,5 +1,7 @@
 package com.example;
 
+import com.google.common.base.Strings;
+import com.sun.deploy.util.StringUtils;
 import org.apache.commons.math3.linear.DefaultRealMatrixChangingVisitor;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -30,6 +32,7 @@ public class MainWorker {
         IPiece king0 = new King(ids);
         IPiece king1 = new King(ids);
         IPiece king2 = new King(ids);
+
 
         permutator.addPiece(king0);
         permutator.addPiece(king1);
@@ -92,14 +95,29 @@ public class MainWorker {
         @Override
         public double visit(int i, int j, double value) {
 //            System.out.println("visit i: " + i + "j:" + j);
+            String deepSpace = "";
+            deepSpace += Strings.repeat(" ", mReqDeep);
+
+            if(mReqDeep == 1 && i == 0 && j == 2){
+                int a= 0;
+            }
+
             if(realMatrixInOriginal.getEntry(i,j) == 0){
                 RealMatrix copyOfInMatrix = realMatrixInOriginal.copy();
+                List<IPiece> mVariantOfPermutedPiecesCopy = new ArrayList<IPiece>(mVariantOfPermutedPieces);
                 //copyOfInMatrix.setEntry(i,j,1);
-                IPiece piece =  mVariantOfPermutedPieces.get(mReqDeep);
+
+                IPiece piece =  mVariantOfPermutedPiecesCopy.get(mReqDeep);
                 piece.setPosition(new Position(i,j));
                 copyOfInMatrix = copyOfInMatrix.add(piece.getPieceMovementMatrix());
-                System.out.println("visit i: " + i + ", j: " + j + ", deep: " + mReqDeep + ", copyOfInMatrix: " + copyOfInMatrix + ", orMatrix: " + realMatrixInOriginal);
-                System.out.println("realMatrixInOriginal ref!!!!!:" + Integer.toHexString(System.identityHashCode(realMatrixInOriginal)));
+                    System.out.println(deepSpace + "deep: " + mReqDeep + ",      visit i: " + i + ", j: " + j + ", orM: " + realMatrixInOriginal + ", cM: " + copyOfInMatrix);
+
+/*
+                System.out.println("visit i: " + i + ", j: " + j + ", deep: " + mReqDeep +
+                        ", copyOfInMatrix: " + String.valueOf(Integer.toHexString(System.identityHashCode(copyOfInMatrix)) + ", " + copyOfInMatrix +
+                        ", orMatrix: " + String.valueOf(Integer.toHexString(System.identityHashCode(realMatrixInOriginal)) + ", " + realMatrixInOriginal)));
+*/
+//                System.out.println("realMatrixInOriginal ref!!!!!:" + Integer.toHexString(System.identityHashCode(realMatrixInOriginal)));
 
 //                if(mReqDeep == 0) {
 //                    HashSet listOfUniquePos = iterateAllFigurePositions(mVariantOfPermutedPieces, mReqDeep, copyOfInMatrix);
@@ -112,9 +130,10 @@ public class MainWorker {
                 // id pos F1 < 2 and pos F2 < 2 and ... pos Fn < 2 then hashset.add (current F)
                 //if(copyOfInMatrix.getEntry(piece.getPosition().getX(), piece.getPosition().getY() )
 
+                mVariantOfPermutedPiecesCopy.get(mReqDeep).clearMatrix();
 
                 if(mReqDeep>0) {
-                    realMatrixInOriginal.walkInRowOrder(new SetVisitor(mVariantOfPermutedPieces, mReqDeep, copyOfInMatrix));
+                    copyOfInMatrix.walkInRowOrder(new SetVisitor(mVariantOfPermutedPiecesCopy, mReqDeep, copyOfInMatrix));
                 }
 
 //                if(deep == 0){
@@ -123,10 +142,11 @@ public class MainWorker {
 
             }
             else{
-                //System.out.println("cant visit i: " + i + ", j: " + j + ", deep: " + mReqDeep + ", matrix: " + realMatrixInOriginal);
+
+                System.out.println(deepSpace + "deep: " + mReqDeep + ", cant visit i: " + i + ", j: " + j + ", orM: " + realMatrixInOriginal);
             }
 
-            return 0;
+            return realMatrixInOriginal.getEntry(i,j);
         }
 
         private HashSet iterateAllFigurePositions(List<IPiece> variantOfPermutedPieces, int deep, RealMatrix currentMatrix) {
@@ -156,6 +176,8 @@ public class MainWorker {
 
         @Override
         public double end() {
+            mVariantOfPermutedPieces.get(mReqDeep).setPosition(new Position(-100, -100));
+            mVariantOfPermutedPieces.get(mReqDeep).clearMatrix();
             System.out.println("end");
             return super.end();
         }

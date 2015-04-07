@@ -9,8 +9,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 public class ChessBoard {
 
     private RealMatrix mRealMatrix;
-    private static int mWidth = MainWorker.BOARD_WIDTH;
     private static int mHeight = MainWorker.BOARD_HEIGHT;
+    private static int mWidth = MainWorker.BOARD_WIDTH;
 
     public ChessBoard() {
         //mRealMatrix = MatrixUtils.createRealMatrix(width, height);
